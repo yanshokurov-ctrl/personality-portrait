@@ -32,7 +32,7 @@ class Question:
     text: str
     type: QuestionType
     options: tuple[Option, ...] = ()
-    required: bool = True
+    required: bool = False  # True — вопрос нельзя пропустить
 
 
 # int — один вариант или шкала, list[int] — несколько вариантов, None — вопрос пропущен

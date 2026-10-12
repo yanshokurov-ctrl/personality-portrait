@@ -1,7 +1,8 @@
 """Сборщик результатов: формирует итоговый отчёт «Портрет личности»."""
 
-from app.contracts import Answer, Portrait
+from app.contracts import Answer, MethodologyResult, Portrait, ResultStatus
 from app.methodologies.base import Methodology
+from app.methodologies.runner import run_methodology
 
 
 def collect(
@@ -9,15 +10,23 @@ def collect(
     grouped_answers: dict[str, dict[str, Answer]],
     failed: dict[str, str],
 ) -> Portrait:
-    """Задача 1.6 (Разработчик 3).
+    """Собрать результаты всех методик в итоговый отчёт.
 
-    Правила:
-    - в отчёте ровно один результат на каждую методику, в порядке methodologies —
-      без потерь и дубликатов;
-    - методика из failed (не загрузились вопросы) -> результат со статусом ERROR
-      и причиной в message;
-    - остальные обрабатываются через app.methodologies.runner.run_methodology,
-      который сам вернёт ERROR или MISSING при проблемах;
-    - методики нет в grouped_answers -> передать ей пустой словарь ответов.
+    В отчёте ровно один результат на каждую методику, в порядке methodologies.
+    Ошибка одной методики не мешает остальным: она попадает в отчёт со статусом ERROR.
     """
-    raise NotImplementedError
+    ids = [methodology.id for methodology in methodologies]
+    duplicates = sorted({id for id in ids if ids.count(id) > 1})
+    if duplicates:
+        raise ValueError(f"Методики подключены повторно: {', '.join(duplicates)}")
+
+    results = []
+    for methodology in methodologies:
+        if methodology.id in failed:
+            results.append(MethodologyResult(
+                methodology.id, methodology.name, ResultStatus.ERROR,
+                message=f"Вопросы методики не загрузились: {failed[methodology.id]}",
+            ))
+        else:
+            results.append(run_methodology(methodology, grouped_answers.get(methodology.id, {})))
+    return Portrait(results)

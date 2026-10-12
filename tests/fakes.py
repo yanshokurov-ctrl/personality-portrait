@@ -1,7 +1,18 @@
 """«Сломанные» методики для проверки обработки ошибок."""
 
-from app.contracts import MethodologyResult, ResultStatus
+from app.contracts import MethodologyResult, Option, Question, QuestionType, ResultStatus
 from app.methodologies.stubs import StubMethodology
+
+
+class MixedQuestionsMethodology(StubMethodology):
+    """Вопросы разных типов: обязательный с одним вариантом и с несколькими вариантами."""
+
+    def get_questions(self):
+        options = (Option(1, "А"), Option(2, "Б"), Option(3, "В"))
+        return [
+            Question(f"{self.id}.1", self.id, "Один вариант", QuestionType.SINGLE, options, required=True),
+            Question(f"{self.id}.2", self.id, "Несколько вариантов", QuestionType.MULTIPLE, options),
+        ]
 
 
 class CrashingMethodology(StubMethodology):

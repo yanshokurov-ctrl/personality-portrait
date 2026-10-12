@@ -47,7 +47,7 @@
 
 | Структура | Поля |
 |-----------|------|
-| `Question` | `id` (`"m01.5"`), `methodology_id`, `text`, `type` (`single` / `multiple` / `scale`), `options`, `required` |
+| `Question` | `id` (`"m01.5"`), `methodology_id`, `text`, `type` (`single` / `multiple` / `scale`), `options`, `required` (по умолчанию `False`; `True` — вопрос нельзя пропустить) |
 | `Option` | `value` (число для ключа), `text` (что видит пользователь) |
 | `Answer` | `question_id`, `value` (`int` / `list[int]` / `None` = пропущен) |
 | `MethodologyResult` | `methodology_id`, `name`, `status` (`ok` / `error` / `missing`), `scales`, `message` |
@@ -57,6 +57,24 @@
 Почему у результата **список шкал**, а не один балл: у многих методик несколько шкал
 (например, COPE, стили коммуникации, черты характера). Методика с одной шкалой
 просто возвращает список из одного элемента.
+
+## Использование движка
+
+```python
+from app.engine.session import SurveySession
+from app.methodologies.registry import get_methodologies
+
+session = SurveySession(get_methodologies())
+while not session.is_finished():
+    question = session.current_question()   # показать question.text и question.options
+    current, total = session.progress()     # индикатор «Вопрос 3 из 60»
+    session.answer(4)                       # или session.skip(); ValueError — недопустимый ответ
+    session.next()                          # session.back() — к предыдущему вопросу
+portrait = session.finish()                 # итоговый «Портрет личности»
+```
+
+`answer()` и `skip()` не переходят к следующему вопросу — переход делает интерфейс через `next()`.
+Повторный ответ на тот же вопрос перезаписывает прежний.
 
 ## Обработка ошибок
 
@@ -71,7 +89,10 @@
 | Методика вернула результат не по контракту | `runner.check_result` | Результат `error`, список нарушений в `message` |
 | Пользователь пропустил часть вопросов | Методика | Методика сама решает, как считать (правило — на этапе 2) |
 | Пользователь пропустил все вопросы методики | `runner.run_methodology` | Результат `missing` («Нет ответов») |
-| Недопустимый ответ (нет такого варианта) | `session.answer` | `ValueError`, интерфейс просит ответить заново |
+| Недопустимый ответ (нет такого варианта, не тот тип) | `session.answer` | `ValueError`, интерфейс просит ответить заново |
+| Пропуск обязательного вопроса | `session.skip` | `ValueError`, интерфейс просит ответить |
+| Пользователь остановился на середине | `session.grouped_answers` | Непройденные вопросы считаются пропущенными |
+| Методика подключена дважды | `collector.collect` | `ValueError` — ошибка конфигурации |
 
 Что видит пользователь (этап 3): при `error` — «Результат по методике временно
 недоступен», при `missing` — «Вы не ответили на вопросы этой методики».
