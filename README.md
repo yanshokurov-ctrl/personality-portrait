@@ -47,6 +47,7 @@ pytest
 
 ## Документы команды
 
+- [Архитектура и контракты](docs/architecture.md)
 - [Роли и состав команды](docs/roles.md)
 - [Правила работы](docs/team-rules.md)
 - [Задачи](docs/tasks.md)
