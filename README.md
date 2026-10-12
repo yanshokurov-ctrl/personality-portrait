@@ -34,6 +34,14 @@ pip install -r requirements.txt
 pytest
 ```
 
+## Демонстрация
+
+```bash
+python -m app.demo            # пройти опрос в консоли
+python -m app.demo --auto     # случайные ответы, сразу отчёт
+python -m app.demo --json     # отчёт в формате JSON
+```
+
 ## Сроки
 
 | Дата          | Контрольная точка                |
@@ -47,6 +55,12 @@ pytest
 
 ## Документы команды
 
+- [Архитектура и контракты](docs/architecture.md)
+- [API ядра](docs/api.md)
+- [Как подключить методику](docs/how-to-add-methodology.md)
+- [Сценарии использования](docs/user-scenarios.md)
+- [Примеры отчётов](docs/report-examples.md)
+- [Тестовые сценарии](docs/test-scenarios.md)
 - [Роли и состав команды](docs/roles.md)
 - [Правила работы](docs/team-rules.md)
 - [Задачи](docs/tasks.md)
